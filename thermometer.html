@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Thermometer Lab</title>
+  <style>
+    #container {
+      fill: #ffffff;
+      stroke: #000000;
+      stroke-width: 5;
+    }
+    #circ {
+      fill: #ffffff;
+    }
+    #mercury, #innerBulb {
+      fill: rgb(0, 0, 255); 
+    }
+    #depth {
+      stroke: #ffffff;
+    }
+    #scale text {
+      font-size: 10px;
+      fill: #000000;
+    }
+    #glass {
+      fill: #ffffff;
+      stroke: #cccccc;
+      stroke-width: 5;
+    }
+  </style>
+</head>
+<body>
+  <h1>Thermometer Lab</h1>
+  <input type="range" id="tempSlider" min="0" max="212" value="0" style="width: 50%;"> 
+  <br>
+  <label><input type="radio" name="unit" value="Fahrenheit" checked> Fahrenheit</label>
+  <label><input type="radio" name="unit" value="Celsius"> Celsius</label>
+  <div>
+    <svg version="1.1" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" height="50%" width="75%">
+      <rect id="container" x="10" y="10" width="100" height="210" rx="15" />
+      <g id="glass">
+        <rect x="45" y="20" width="30" height="160" rx="15" />
+        <ellipse cx="60" cy="180" rx="30" ry="30" />
+        <rect x="46.5" y="22" width="27" height="165" rx="15" stroke="none" /> 
+      </g>
+      <g id="circ">
+        <rect x="45" y="20" width="30" height="160" rx="15" />
+        <ellipse cx="60" cy="180" rx="30" ry="30" />
+        <rect x="46.5" y="22" width="27" height="165" rx="15" stroke="none" />
+        <rect id="temperature" x="50" y="25" width="20" height="155" rx="10" stroke="none" />
+        <ellipse id="innerBulb" cx="60" cy="180" rx="20" ry="20" />
+      </g>
+      <g id="scale">
+      </g>
+    </svg>
+  </div>
+  <script>
+    const tempSlider = document.getElementById('tempSlider');
+    const temperatureRect = document.getElementById('temperature');
+    const innerBulb = document.getElementById('innerBulb'); 
+    const scale = document.getElementById('scale');
+    const unitRadios = document.getElementsByName('unit');
+
+    function updateThermometer() {
+      const isFahrenheit = document.querySelector('input[name="unit"]:checked').value === 'Fahrenheit';
+      let value = parseFloat(tempSlider.value);
+      let maxTemp = isFahrenheit ? 212 : 100; 
+      let minTemp = 0; 
+      let tempRange = maxTemp - minTemp;
+      let height = (value / tempRange) * 155; 
+      
+      temperatureRect.setAttribute('y', 180 - height);
+      temperatureRect.setAttribute('height', height);
+      
+      tempSlider.max = isFahrenheit ? 212 : 100;
+
+      if (value < tempRange / 3) {
+        temperatureRect.style.fill = '#0000ff'; 
+        innerBulb.style.fill = '#0000ff'; 
+      } else if (value < 2 * tempRange / 3) {
+        temperatureRect.style.fill = '#ffa500'; 
+        innerBulb.style.fill = '#ffa500'; 
+      } else {
+        temperatureRect.style.fill = '#ff0000'; 
+        innerBulb.style.fill = '#ff0000'; 
+      }
+    }
+    function updateScale() {
+      const isFahrenheit = document.querySelector('input[name="unit"]:checked').value === 'Fahrenheit';
+      scale.innerHTML = ''; 
+      const interval = isFahrenheit ? 20 : 10; 
+      const maxTemp = isFahrenheit ? 212 : 100; 
+      const minTemp = isFahrenheit ? 0 : -17.78; 
+      const tempRange = maxTemp - minTemp;
+      for (let i = 0; i <= 10; i++) {
+        const y = 180 - (i * 155 / 10);
+        const notch = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        notch.setAttribute('x1', '110');
+        notch.setAttribute('x2', '120');
+        notch.setAttribute('y1', y.toString());
+        notch.setAttribute('y2', y.toString());
+        notch.setAttribute('stroke', '#000');
+        scale.appendChild(notch);
+        
+        if (i % 2 === 0) { 
+          const temp = minTemp + (tempRange * i / 10);
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('x', '125'); 
+          label.setAttribute('y', y + 3); 
+          label.textContent = `${temp.toFixed(0)}${isFahrenheit ? '°F' : '°C'}`;
+          scale.appendChild(label);
+        }
+      }
+    }
+
+    tempSlider.addEventListener('input', updateThermometer);
+    for (const radio of unitRadios) {
+      radio.addEventListener('change', () => {
+        updateThermometer(); 
+        updateScale();
+      });
+    }
+
+    updateThermometer();
+    updateScale(); 
+  </script>
+</body>
+</html>
